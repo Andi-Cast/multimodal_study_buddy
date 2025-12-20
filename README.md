@@ -100,6 +100,10 @@ Before you begin, ensure you have the following installed:
 - **Java 21** or higher ([Download](https://adoptium.net/))
 - **Maven 3.8+** ([Download](https://maven.apache.org/download.cgi))
 - **Docker Desktop** ([Download](https://www.docker.com/products/docker-desktop))
+- **Tesseract OCR** - Required for image text extraction
+  - **macOS**: `brew install tesseract`
+  - **Ubuntu/Debian**: `sudo apt-get install tesseract-ocr`
+  - **Windows**: [Download installer](https://github.com/UB-Mannheim/tesseract/wiki)
 - **OpenAI API Key** ([Get one here](https://platform.openai.com/api-keys))
 - **Git** ([Download](https://git-scm.com/downloads))
 
@@ -541,7 +545,16 @@ docker exec study_buddy_postgres psql -U postgres -d studybuddy -c "SELECT * FRO
 **4. "Insufficient quota" error**
 - Add credits to your OpenAI account at https://platform.openai.com/account/billing
 
-**5. Flyway migration errors**
+**5. "Failed to process image" or image upload errors**
+- Tesseract OCR is required for extracting text from images
+- Install Tesseract:
+  - **macOS**: `brew install tesseract`
+  - **Ubuntu/Debian**: `sudo apt-get install tesseract-ocr`
+  - **Windows**: [Download installer](https://github.com/UB-Mannheim/tesseract/wiki)
+- Verify installation: `tesseract --version`
+- Restart the backend after installing Tesseract
+
+**6. Flyway migration errors**
 - Clean the database: `docker-compose down -v && docker-compose up -d`
 - Restart the application
 
@@ -553,11 +566,50 @@ logging.level.rag.study.application=DEBUG
 logging.level.org.springframework.ai=DEBUG
 ```
 
+## Testing
+
+This project includes comprehensive test coverage for both backend and frontend.
+
+### Running Tests
+
+**Backend (JUnit 5 + Mockito):**
+```bash
+cd backend
+./mvnw test
+```
+
+**Frontend (Vitest + React Testing Library):**
+```bash
+cd frontend
+npm test
+```
+
+**Generate Coverage Reports:**
+```bash
+# Backend
+cd backend
+./mvnw test jacoco:report
+
+# Frontend
+cd frontend
+npm run test:coverage
+```
+
+### Test Coverage
+
+- **Backend Services**: Unit tests for VectorStoreService, DocumentProcessingService
+- **Backend Controllers**: Integration tests for REST API endpoints
+- **Frontend Components**: Component tests for DocumentUpload, DocumentList, ChatInterface
+- **API Layer**: Mocked API tests
+
+See [TESTING.md](./TESTING.md) for detailed testing documentation.
+
 ## Future Enhancements
 
 Potential improvements for this project:
 
-- [ ] **Frontend UI**: React-based web interface for easier interaction
+- [x] **Frontend UI**: ✅ React-based web interface implemented
+- [x] **Testing**: ✅ Unit and integration tests added
 - [ ] **Multi-user Support**: User authentication and document isolation
 - [ ] **Conversation History**: Save and retrieve past Q&A sessions
 - [ ] **Advanced Chunking**: Semantic chunking based on document structure
@@ -568,8 +620,9 @@ Potential improvements for this project:
 - [ ] **Smart Caching**: Cache frequently asked questions
 - [ ] **Analytics Dashboard**: Track usage, popular questions, and sources
 - [ ] **Mobile App**: iOS and Android applications
-- [ ] **Integration Testing**: Comprehensive test suite
-- [ ] **CI/CD Pipeline**: Automated testing and deployment
+- [ ] **E2E Testing**: Add Playwright or Cypress for end-to-end tests
+- [ ] **CI/CD Pipeline**: Automated testing and deployment (GitHub Actions)
+- [ ] **Live Deployment**: Deploy to production (Vercel + Railway/Render)
 
 ## Security Considerations
 
